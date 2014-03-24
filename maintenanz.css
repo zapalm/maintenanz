@@ -1,0 +1,7 @@
+#maintenance_notice {
+    left: 0;
+    position: relative;
+    top: 5px;
+    z-index: 1;
+	opacity: 1;
+}
