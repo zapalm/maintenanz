@@ -1,1 +1,0 @@
-<div id="maintenance_notice" class="warning">{$msg}</div>

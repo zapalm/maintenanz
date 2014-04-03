@@ -1,7 +1,14 @@
 #maintenance_notice {
     left: 0;
     position: relative;
-    top: 5px;
     z-index: 1;
 	opacity: 1;
+}
+
+#maintenance_notice, #maintenance_notice a {
+	color: #9E6014;
+}
+
+#maintenance_notice img {
+	padding-right: 5px;
 }
