@@ -1,11 +1,11 @@
 <?php
 /**
- * Maintenance tool: module for Prestashop
+ * Maintenance tool: module for PrestaShop 1.5-1.6
  *
- * @link http://prestashop.modulez.ru/en/ Modules for Prestashop CMS
  * @author zapalm <zapalm@ya.ru>
  * @copyright (c) 2014, zapalm
- * @license http://www.opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
+ * @link http://prestashop.modulez.ru/en/home/24-maintenance-tool.html The module's homepage
+ * @license http://opensource.org/licenses/afl-3.0.php Academic Free License (AFL 3.0)
  */
 
 if (!defined('_PS_VERSION_'))
@@ -28,7 +28,7 @@ class Maintenanz extends Module
 		$this->version = '0.2';
 		$this->author = 'zapalm';
 		$this->need_instance = 0;
-		$this->ps_versions_compliancy = array('min' => '1.5.0.0', 'max' => '1.5.7.0');
+		$this->ps_versions_compliancy = array('min' => '1.5.0.0', 'max' => '1.6.1.0');
 
 		parent::__construct();
 
