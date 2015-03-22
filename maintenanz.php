@@ -34,7 +34,7 @@ class Maintenanz extends Module
 		parent::__construct();
 
 		$this->displayName = $this->l('Maintenance tool');
-		$this->description = $this->l('Allow to add maintenance messages.');
+		$this->description = $this->l('Allow to add maintenance messages and has other features.');
 	}
 
 	public function install()
@@ -160,7 +160,7 @@ class Maintenanz extends Module
 		$form->allow_employee_form_lang = $this->context->controller->allow_employee_form_lang;
 
 		$this->fields_form[0]['form'] = array(
-			'legend' => array('title' => $this->l('Switch-off settings')),
+			'legend' => array('title' => $this->l('Notifying settings')),
 			'input' => array(
 				array(
 					'type' => 'text',
