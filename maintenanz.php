@@ -1,11 +1,11 @@
 <?php
 /**
- * Maintenance tool: module for PrestaShop 1.5-1.6
+ * Maintenance tool: module for PrestaShop
  *
- * @author zapalm <zapalm@ya.ru>
- * @copyright (c) 2014, zapalm
- * @link http://prestashop.modulez.ru/en/home/24-maintenance-tool.html The module's homepage
- * @license http://opensource.org/licenses/afl-3.0.php Academic Free License (AFL 3.0)
+ * @link      http://prestashop.modulez.ru/en/ Modules for PrestaShop CMS
+ * @author    zapalm <zapalm@ya.ru>
+ * @copyright 2014-2015 zapalm
+ * @license   http://opensource.org/licenses/afl-3.0.php Academic Free License (AFL 3.0)
  */
 
 if (!defined('_PS_VERSION_'))
@@ -25,10 +25,11 @@ class Maintenanz extends Module
 	{
 		$this->name = 'maintenanz';
 		$this->tab = 'administration';
-		$this->version = '0.2';
+		$this->version = '0.3.0';
 		$this->author = 'zapalm';
 		$this->need_instance = 0;
-		$this->ps_versions_compliancy = array('min' => '1.5.0.0', 'max' => '1.6.1.0');
+		$this->bootstrap = true;	// true, but styles still not compatible with PS.16 bootstrup
+		$this->ps_versions_compliancy = array('min' => '1.5', 'max' => '1.6');
 
 		parent::__construct();
 
@@ -58,6 +59,7 @@ class Maintenanz extends Module
 
 		$settings = Configuration::getMultiple(array('MAINTENANZ_MSG', 'MAINTENANZ_CONT'), $id_lang);
 		$settings['MAINTENANZ_SHOP'] = Configuration::get('MAINTENANZ_SHOP') ? Configuration::get('PS_SHOP_NAME') : '';
+		$settings['ps_img_uri'] = _PS_IMG_;
 
 		$this->context->smarty->assign($settings);
 	}
@@ -83,9 +85,29 @@ class Maintenanz extends Module
 	{
 		$this->context->controller->getLanguages();
 		$output = '';
-		$submit = !empty($_POST['submit'.$this->name]);	// Tools::isSubmit() method is unusable here
+		$errors = array();
+		$submit_settings = (bool)Tools::getValue('submit_settings');
+		$submit_debug = (bool)Tools::getValue('submit_debug');
 		$res = true;
 
+		// change mode (debug or normal)
+		$this->fields_value['MAINTENANZ_DEBUG'] = (bool)_PS_MODE_DEV_;
+		if ($submit_debug && Tools::getValue('MAINTENANZ_DEBUG') != _PS_MODE_DEV_)
+		{
+			$prev_mode = var_export($this->fields_value['MAINTENANZ_DEBUG'], true);
+			$new_mode = var_export(!$this->fields_value['MAINTENANZ_DEBUG'], true);
+
+			$prev_settings = file_get_contents(dirname(__FILE__).'/../../config/defines.inc.php');
+			$new_settings = preg_replace('/define\(\'_PS_MODE_DEV_\', '.$prev_mode.'\);/Ui', 'define(\'_PS_MODE_DEV_\', '.$new_mode.');', $prev_settings);
+
+			// todo: need to backup
+			if (file_put_contents(dirname(__FILE__).'/../../config/defines.inc.php', $new_settings))
+				$this->fields_value['MAINTENANZ_DEBUG'] = !$this->fields_value['MAINTENANZ_DEBUG'];
+			else
+				$errors[] = $this->l('The "defines.inc.php" file cannot be overwritten.');
+		}
+
+		// change other settings
 		foreach($this->conf_default as $name => $definition)
 		{
 			if($definition['lang'])
@@ -93,7 +115,7 @@ class Maintenanz extends Module
 				foreach ($this->context->controller->_languages as $lang)
 				{
 					$name_lang = $name.'_'.$lang['id_lang'];
-					if ($submit && !Tools::isEmpty($value = Tools::getValue($name_lang)))
+					if ($submit_settings && !Tools::isEmpty($value = Tools::getValue($name_lang)))
 						$res &= Configuration::updateValue($name, array($lang['id_lang'] => $value));
 
 					$this->fields_value[$name][$lang['id_lang']] = Configuration::get($name, $lang['id_lang']);
@@ -101,15 +123,20 @@ class Maintenanz extends Module
 			}
 			else
 			{
-				if ($submit && !Tools::isEmpty($value = Tools::getValue($name)))
+				if ($submit_settings && !Tools::isEmpty($value = Tools::getValue($name)))
 					$res &= Configuration::updateValue($name, $value);
 
 				$this->fields_value[$name] = Configuration::get($name);
 			}
 		}
 
-		if($submit)
-			$output .= $res ? $this->displayConfirmation($this->l('Successfull update')) : $this->displayError($this->l('Unsuccessfull update'));
+		if($submit_settings || $submit_debug)
+		{
+			if (!$res)
+				$errors[] = $this->l('Unsuccessfull settings update.');
+
+			$output .= $errors ? $this->displayError(implode('<br/>', $errors)) : $this->displayConfirmation($this->l('Successfull update.'));
+		}
 
 		return $output.$this->displayForm();
 	}
@@ -126,25 +153,14 @@ class Maintenanz extends Module
 		$form->token = $token;
 		$form->currentIndex = $url;
 		$form->title = $this->displayName;
-		$form->show_toolbar = true;
-		$form->toolbar_scroll = true;
-		$form->submit_action = 'submit'.$this->name;
+		$form->show_toolbar = false;
+		$form->submit_action = 'submit_settings';
 		$form->languages = $this->context->controller->_languages;
 		$form->default_form_language = $this->context->controller->default_form_language;
 		$form->allow_employee_form_lang = $this->context->controller->allow_employee_form_lang;
-		$form->toolbar_btn = array(
-			'save' => array(
-				'href' => $url.'&save'.$this->name.'&token='.$token,
-				'desc' => $this->l('Save')
-			),
-			'back' => array(
-				'href' => $currentIndex.'&token='.$token,
-				'desc' => $this->l('Back')
-			)
-		);
 
 		$this->fields_form[0]['form'] = array(
-			'legend' => array('title' => $this->l('Settings')),
+			'legend' => array('title' => $this->l('Switch-off settings')),
 			'input' => array(
 				array(
 					'type' => 'text',
@@ -185,6 +201,36 @@ class Maintenanz extends Module
 			'submit' => array(
 				'title' => $this->l('Save'),
 				'class' => 'button'
+			)
+		);
+
+		$this->fields_form[1]['form'] = array(
+			'legend' => array('title' => $this->l('Debug settings')),
+			'input' => array(
+				array(
+					'type' => 'radio',
+					'label' => $this->l('Enable debug mode'),
+					'name' => 'MAINTENANZ_DEBUG',
+					'class' => 't',
+					'is_bool' => true,
+					'values' => array(
+						array(
+							'id' => '',
+							'value' => 1,
+							'label' => $this->l('Yes')
+						),
+						array(
+							'id' => '',
+							'value' => 0,
+							'label' => $this->l('No')
+						),
+					),
+				),
+			),
+			'submit' => array(
+				'title' => $this->l('Save'),
+				'class' => 'button',
+				'name' => 'submit_debug'
 			)
 		);
 
