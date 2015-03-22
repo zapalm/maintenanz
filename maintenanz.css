@@ -3,6 +3,15 @@
     position: relative;
     z-index: 1;
 	opacity: 1;
+    background: none repeat scroll 0 0 #ffffe0;
+    border: 1px solid #e6db55;
+    clear: both;
+    font-size: 13px;
+	margin: 0 0 10px;
+    padding-bottom: 10px;
+    padding-right: 10px;
+    padding-top: 10px;
+    width: auto;
 }
 
 #maintenance_notice, #maintenance_notice a {
