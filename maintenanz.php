@@ -2,9 +2,9 @@
 /**
  * Maintenance tool: module for PrestaShop
  *
- * @link      http://prestashop.modulez.ru/en/ Modules for PrestaShop CMS
+ * @link      http://prestashop.modulez.ru/en/administrative-tools/24-tool-for-maintenance-debug.html The module homepage
  * @author    zapalm <zapalm@ya.ru>
- * @copyright 2014-2015 zapalm
+ * @copyright 2014-2016 zapalm
  * @license   http://opensource.org/licenses/afl-3.0.php Academic Free License (AFL 3.0)
  */
 
@@ -23,6 +23,9 @@ class Maintenanz extends Module
     /** @var bool Assign smarty vars only ones */
     private static $vars_assigned = false;
 
+    /**
+     * @inheritdoc
+     */
     public function __construct() {
         $this->name          = 'maintenanz';
         $this->tab           = 'administration';
@@ -37,6 +40,9 @@ class Maintenanz extends Module
         $this->description = $this->l('Allow to add maintenance messages and has other features.');
     }
 
+    /**
+     * @inheritdoc
+     */
     public function install() {
         return parent::install()
             && $this->registerHook('top')
@@ -45,6 +51,9 @@ class Maintenanz extends Module
         ;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function uninstall() {
         foreach ($this->conf_default as $setting => $value) {
             Configuration::deleteByName($setting);
@@ -83,6 +92,9 @@ class Maintenanz extends Module
         return $this->display(__FILE__, 'maintenance.tpl');
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getContent() {
         $this->context->controller->getLanguages();
         $output             = '';
