@@ -2,20 +2,20 @@
     left: 0;
     position: relative;
     z-index: 1;
-	opacity: 1;
+    opacity: 1;
     background: none repeat scroll 0 0 #ffffe0;
     border: 1px solid #e6db55;
     clear: both;
     font-size: 13px;
-	margin: 0 0 10px;
-	padding: 10px;
+    margin: 0 0 10px;
+    padding: 10px;
     width: auto;
 }
 
 #maintenance_notice, #maintenance_notice a {
-	color: #9E6014;
+    color: #9E6014;
 }
 
 #maintenance_notice img {
-	padding-right: 5px;
+    padding-right: 5px;
 }
