@@ -29,7 +29,6 @@ class Maintenanz extends Module
 		$this->author = 'zapalm';
 		$this->need_instance = 0;
 		$this->bootstrap = true;	// true, but styles still not full compatible with PS.16 bootstrup
-		$this->ps_versions_compliancy = array('min' => '1.5', 'max' => '1.6');
 
 		parent::__construct();
 
