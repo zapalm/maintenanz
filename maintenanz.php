@@ -29,7 +29,7 @@ class Maintenanz extends Module
     public function __construct() {
         $this->name          = 'maintenanz';
         $this->tab           = 'administration';
-        $this->version       = '0.3.0';
+        $this->version       = '0.3.1';
         $this->author        = 'zapalm';
         $this->need_instance = 0;
         $this->bootstrap     = true;    // @todo: true, but styles still not full compatible with PS.16 bootstrap
