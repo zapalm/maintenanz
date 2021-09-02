@@ -1,0 +1,30 @@
+.maintenanz-top-block {
+    left: 0;
+    position: relative;
+    z-index: 1;
+    opacity: 1;
+    background: none repeat scroll 0 0 #ffffe0;
+    border: 1px solid #e6db55;
+    clear: both;
+    font-size: 13px;
+    padding: 10px;
+}
+
+/* Block for PrestaShop 1.5 */
+#header_right .maintenanz-top-block {
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+/* Block for PrestaShop 1.6 */
+.header-container .maintenanz-top-block {
+    margin: 15px;
+}
+
+.maintenanz-top-block, .maintenanz-top-block a {
+    color: #9E6014;
+}
+
+.maintenanz-top-block img {
+    padding-right: 5px;
+}

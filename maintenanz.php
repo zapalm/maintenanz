@@ -1,38 +1,51 @@
 <?php
 /**
- * Maintenance tool: module for PrestaShop
+ * Tool for maintenance & debug: module for PrestaShop.
  *
- * @link      http://prestashop.modulez.ru/en/administrative-tools/24-tool-for-maintenance-debug.html The module homepage
- * @author    zapalm <zapalm@ya.ru>
- * @copyright 2014-2016 zapalm
- * @license   http://opensource.org/licenses/afl-3.0.php Academic Free License (AFL 3.0)
+ * @author    Maksim T. <zapalm@yandex.com>
+ * @copyright 2014 Maksim T.
+ * @link      https://prestashop.modulez.ru/en/administrative-features/24-tool-for-maintenance-debug.html
+ * @license   https://opensource.org/licenses/afl-3.0.php Academic Free License (AFL 3.0)
  */
 
-if (!defined('_PS_VERSION_')) {
+if (false === defined('_PS_VERSION_')) {
     exit;
 }
 
+require_once _PS_MODULE_DIR_ . 'maintenanz/autoload.inc.php';
+
+/**
+ * Module Maintenanz.
+ *
+ * @author Maksim T. <zapalm@yandex.com>
+ */
 class Maintenanz extends Module
 {
-    private $conf_default = array(
-        'MAINTENANZ_MSG'  => array('value' => '', 'lang' => true),
-        'MAINTENANZ_CONT' => array('value' => '', 'lang' => true),
-        'MAINTENANZ_SHOP' => array('value' => 1, 'lang' => false),
-    );
+    /** The product ID of the module on its homepage. */
+    const HOMEPAGE_PRODUCT_ID = 24;
 
-    /** @var bool Assign smarty vars only ones */
-    private static $vars_assigned = false;
+    /** @var array Default settings. */
+    private $confDefault = [
+        'MAINTENANZ_MSG'   => ['value' => '',  'lang' => true],
+        'MAINTENANZ_CONT'  => ['value' => '',  'lang' => true],
+        'MAINTENANZ_SHOP'  => ['value' => '0', 'lang' => false],
+        'MAINTENANZ_DEBUG' => ['value' => '',  'lang' => false],
+        'MAINTENANZ_MODE'  => ['value' => '1', 'lang' => false],
+    ];
 
     /**
      * @inheritdoc
+     *
+     * @author Maksim T. <zapalm@yandex.com>
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->name          = 'maintenanz';
         $this->tab           = 'administration';
         $this->version       = '0.3.1';
         $this->author        = 'zapalm';
-        $this->need_instance = 0;
-        $this->bootstrap     = true;    // @todo: true, but styles still not full compatible with PS.16 bootstrap
+        $this->need_instance = false;
+        $this->bootstrap     = true;
 
         parent::__construct();
 
@@ -42,212 +55,356 @@ class Maintenanz extends Module
 
     /**
      * @inheritdoc
+     *
+     * @author Maksim T. <zapalm@yandex.com>
      */
-    public function install() {
-        return parent::install()
-            && $this->registerHook('top')
-            && $this->registerHook('header')
-            && $this->registerHook('displayMaintenance')
+    public function install()
+    {
+        $result = parent::install();
+
+        if ($result) {
+            foreach ($this->confDefault as $confName => $definition) {
+                if (false === $definition['lang']) {
+                    Configuration::updateValue($confName, $definition['value']);
+                }
+            }
+
+            $result = $this->registerHook('top')
+                && $this->registerHook('header')
+                && $this->registerHook('displayMaintenance')
+            ;
+        }
+
+        (new \zapalm\prestashopHelpers\components\qualityService\QualityServiceClient(self::HOMEPAGE_PRODUCT_ID))
+            ->installModule($this)
         ;
+
+        return $result;
     }
 
     /**
      * @inheritdoc
+     *
+     * @author Maksim T. <zapalm@yandex.com>
      */
-    public function uninstall() {
-        foreach ($this->conf_default as $setting => $value) {
-            Configuration::deleteByName($setting);
+    public function uninstall()
+    {
+        $result = (bool)parent::uninstall();
+
+        if ($result) {
+            foreach (array_keys($this->confDefault) as $confName) {
+                Configuration::deleteByName($confName);
+            }
         }
 
-        return parent::uninstall();
+        (new \zapalm\prestashopHelpers\components\qualityService\QualityServiceClient(self::HOMEPAGE_PRODUCT_ID))
+            ->uninstallModule($this)
+        ;
+
+        return $result;
     }
 
-    private function _hookCommon() {
-        if (self::$vars_assigned) {
-            return;
-        }
+    /**
+     * Assign common variables.
+     *
+     * @author Maksim T. <zapalm@yandex.com>
+     */
+    private function assignCommonVariables()
+    {
+        $languageId = (int)$this->context->language->id;
 
-        $id_lang = $this->context->cookie->id_lang;
+        $variables                    = Configuration::getMultiple(['MAINTENANZ_MSG', 'MAINTENANZ_CONT'], $languageId);
+        $variables['MAINTENANZ_SHOP'] = (Configuration::get('MAINTENANZ_SHOP') ? $this->context->shop->name : '');
+        $variables['MAINTENANZ_MODE'] = (bool)Configuration::get('MAINTENANZ_MODE');
+        $variables['IS_SHOP_ENABLED'] = (bool)Configuration::get('PS_SHOP_ENABLE');
+        $variables['img_uri']         = $this->_path . 'views/img/';
+        $variables['link']            = $this->context->link;
 
-        $settings = Configuration::getMultiple(array('MAINTENANZ_MSG', 'MAINTENANZ_CONT'), $id_lang);
-        $settings['MAINTENANZ_SHOP'] = Configuration::get('MAINTENANZ_SHOP') ? Configuration::get('PS_SHOP_NAME') : '';
-        $settings['ps_img_uri'] = _PS_IMG_;
-
-        $this->context->smarty->assign($settings);
+        $this->context->smarty->assign($variables);
     }
 
-    public function hookHeader($params) {
-        $this->context->controller->addCSS($this->_path . $this->name . '.css');
+    /**
+     * @inheritDoc
+     *
+     * @author Maksim T. <zapalm@yandex.com>
+     */
+    public function hookHeader($params)
+    {
+        $this->context->controller->addCSS($this->_path . 'views/css/main.css');
     }
 
-    public function hookTop($params) {
-        $this->_hookCommon();
+    /**
+     * @inheritDoc
+     *
+     * @author Maksim T. <zapalm@yandex.com>
+     */
+    public function hookTop($params)
+    {
+        $this->assignCommonVariables();
 
         return $this->display(__FILE__, 'top.tpl');
     }
 
-    public function hookDisplayMaintenance($params) {
-        $this->_hookCommon();
+    /**
+     * @inheritDoc
+     *
+     * @author Maksim T. <zapalm@yandex.com>
+     */
+    public function hookDisplayMaintenance($params)
+    {
+        $this->assignCommonVariables();
 
         return $this->display(__FILE__, 'maintenance.tpl');
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
+     *
+     * @author Maksim T. <zapalm@yandex.com>
      */
-    public function getContent() {
-        $this->context->controller->getLanguages();
-        $output             = '';
-        $errors             = array();
-        $submit_settings    = (bool)Tools::getValue('submit_settings');
-        $submit_debug       = (bool)Tools::getValue('submit_debug');
-        $res                = true;
+    public function getContent()
+    {
+        $output         = '';
+        $errors         = [];
+        $submitConfig   = (bool)Tools::getValue('submitConfig');
+        $submitDebug    = (bool)Tools::getValue('submitDebug');
+        $result         = 1;
+        $languagesIds   = \zapalm\prestashopHelpers\helpers\ArrayHelper::getColumn($this->context->controller->getLanguages(), 'id_lang');
 
-        // change mode (debug or normal)
-        $this->fields_value['MAINTENANZ_DEBUG'] = (bool)_PS_MODE_DEV_;
-        if ($submit_debug && Tools::getValue('MAINTENANZ_DEBUG') != _PS_MODE_DEV_) {
-            $prev_mode = var_export($this->fields_value['MAINTENANZ_DEBUG'], true);
-            $new_mode  = var_export(!$this->fields_value['MAINTENANZ_DEBUG'], true);
+        // Change the mode to debug or to normal
+        if ($submitDebug && (bool)Tools::getValue('MAINTENANZ_DEBUG') !== (bool)_PS_MODE_DEV_) {
+            $newMode         = (Tools::getValue('MAINTENANZ_DEBUG') ? 'true' : 'false');
+            $configFilePath  = dirname(__FILE__) . '/../../config/defines.inc.php';
+            $currentSettings = file_get_contents($configFilePath);
 
-            $prev_settings = file_get_contents(dirname(__FILE__) . '/../../config/defines.inc.php');
-            $new_settings  = preg_replace('/define\(\'_PS_MODE_DEV_\', ' . $prev_mode . '\);/Ui', 'define(\'_PS_MODE_DEV_\', ' . $new_mode . ');', $prev_settings);
+            $newSettings  = preg_replace(
+                '/define\(\'_PS_MODE_DEV_\', ([a-zA-Z]+)\);/Ui',
+                'define(\'_PS_MODE_DEV_\', ' . $newMode . ');',
+                $currentSettings,
+                -1,
+                $replacementsCount
+            );
 
-            // todo: needs to backup
-            if (file_put_contents(dirname(__FILE__) . '/../../config/defines.inc.php', $new_settings)) {
-                $this->fields_value['MAINTENANZ_DEBUG'] = !$this->fields_value['MAINTENANZ_DEBUG'];
+            if (null !== $newSettings && 1 === $replacementsCount && false !== file_put_contents($configFilePath, $newSettings)) {
+                Configuration::updateValue('MAINTENANZ_DEBUG', ('true' === $newMode ? 1 : 0));
+
+                if (function_exists('opcache_invalidate')) {
+                    opcache_invalidate($configFilePath);
+                }
+
+                $result &= 1;
             } else {
                 $errors[] = $this->l('The "defines.inc.php" file cannot be overwritten.');
+                $result &= 0;
             }
+        } else {
+            Configuration::updateValue('MAINTENANZ_DEBUG', (int)_PS_MODE_DEV_);
         }
 
-        // change other settings
-        foreach ($this->conf_default as $name => $definition) {
-            if ($definition['lang']) {
-                foreach ($this->context->controller->_languages as $lang) {
-                    $name_lang = $name . '_' . $lang['id_lang'];
-                    if ($submit_settings && !Tools::isEmpty($value = Tools::getValue($name_lang))) {
-                        $res &= Configuration::updateValue($name, array($lang['id_lang'] => $value));
+        // Change other settings
+        if ($submitConfig) {
+            foreach ($this->confDefault as $confName => $definition) {
+                if ($definition['lang']) {
+                    foreach ($languagesIds as $languageId) {
+                        $value   = (string)Tools::getValue($confName . '_' . $languageId);
+                        $result &= Configuration::updateValue($confName, [$languageId => $value]);
                     }
-
-                    $this->fields_value[$name][$lang['id_lang']] = Configuration::get($name, $lang['id_lang']);
+                } else {
+                    $result &= Configuration::updateValue($confName, (string)Tools::getValue($confName));
                 }
-            } else {
-                if ($submit_settings && !Tools::isEmpty($value = Tools::getValue($name))) {
-                    $res &= Configuration::updateValue($name, $value);
-                }
-
-                $this->fields_value[$name] = Configuration::get($name);
             }
         }
 
-        if ($submit_settings || $submit_debug) {
-            if (!$res) {
-                $errors[] = $this->l('Unsuccessfull settings update.');
+        $result = (bool)$result;
+        if ($submitConfig || $submitDebug) {
+            if (false === $result) {
+                $errors[] = $this->l('Some setting not updated');
             }
 
-            $output .= ($errors
+            $output .= ([] !== $errors
                 ? $this->displayError(implode('<br/>', $errors))
-                : $this->displayConfirmation($this->l('Successfull update.'))
+                : $this->displayConfirmation($this->l('Settings updated'))
             );
         }
 
         return $output . $this->displayForm();
     }
 
-    protected function displayForm() {
+    /**
+     * Renders the settings form.
+     *
+     * @return string
+     *
+     * @author Maksim T. <zapalm@yandex.com>
+     */
+    protected function displayForm()
+    {
         $token          = Tools::getAdminTokenLite('AdminModules');
         $currentIndex   = AdminController::$currentIndex;
         $url            = $currentIndex . '&configure=' . $this->name;
+        $languages      = $this->context->controller->getLanguages(); // The getter with properties initialization for a form
 
         $form = new HelperForm();
+        $form->identifier               = $this->identifier;
         $form->module                   = $this;
         $form->name_controller          = $this->name;
         $form->token                    = $token;
         $form->currentIndex             = $url;
         $form->title                    = $this->displayName;
         $form->show_toolbar             = false;
-        $form->submit_action            = 'submit_settings';
-        $form->languages                = $this->context->controller->_languages;
+        $form->submit_action            = 'submit_' . $this->name;
+        $form->languages                = $languages;
         $form->default_form_language    = $this->context->controller->default_form_language;
         $form->allow_employee_form_lang = $this->context->controller->allow_employee_form_lang;
 
-        $this->fields_form[0]['form'] = array(
-            'legend' => array('title' => $this->l('Notifying settings')),
-            'input'  => array(
-                array(
-                    'type'     => 'text',
-                    'label'    => $this->l('Displaying message'),
-                    'name'     => 'MAINTENANZ_MSG',
-                    'size'     => 100,
-                    'lang'     => true,
-                    'required' => true
+        $formFields = [];
+
+        $formFields[]['form'] = [
+            'legend' => [
+                'title' => $this->l('Notifying settings'),
+                'icon'  => 'icon-cogs',
+            ],
+            'input'  => [
+                [
+                    'type'  => 'text',
+                    'label' => $this->l('Displaying message'),
+                    'desc'  => implode(' ', [
+                        $this->l('For example: '),
+                        '<u>',
+                        $this->l('The site is under maintenance.'),
+                        $this->l('Do not forget to enable the site for all users!'),
+                        '</u>',
+                    ]),
+                    'name'  => 'MAINTENANZ_MSG',
+                    'size'  => 135,
+                    'lang'  => true,
+                ],
+                [
+                    'type'  => 'text',
+                    'label' => $this->l('Contact message'),
+                    'desc'  => implode(' ', [
+                        $this->l('For example: '),
+                        '<u>',
+                        $this->l('Contact us if you have an urgent question.'),
+                        '</u>',
+                    ]),
+                    'name'  => 'MAINTENANZ_CONT',
+                    'size'  => 135,
+                    'lang'  => true,
+                ],
+                array_merge(
+                    [
+                        'type'   => 'switch',
+                        'label'  => $this->l('Display messages only when the maintenance mode is active'),
+                        'desc'   => $this->l('Choose NO to display these messages regardless of whether the maintenance mode is enabled or not.'),
+                        'name'   => 'MAINTENANZ_MODE',
+                        'values' => [
+                            [
+                                'id'    => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Yes'),
+                            ],
+                            [
+                                'id'    => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('No'),
+                            ],
+                        ],
+                    ],
+                    (version_compare(_PS_VERSION_, '1.6', '>=') ? [] : [
+                        'type'    => 'radio',
+                        'is_bool' => true,
+                        'class'   => 't',
+                    ])
                 ),
-                array(
-                    'type'     => 'text',
-                    'label'    => $this->l('Contact message'),
-                    'name'     => 'MAINTENANZ_CONT',
-                    'size'     => 100,
-                    'lang'     => true,
-                    'required' => true
+                array_merge(
+                    [
+                        'type'   => 'switch',
+                        'label'  => $this->l('Display shop name'),
+                        'name'   => 'MAINTENANZ_SHOP',
+                        'values' => [
+                            [
+                                'id'    => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Yes'),
+                            ],
+                            [
+                                'id'    => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('No'),
+                            ],
+                        ],
+                    ],
+                    (version_compare(_PS_VERSION_, '1.6', '>=') ? [] : [
+                        'type'    => 'radio',
+                        'is_bool' => true,
+                        'class'   => 't',
+                    ])
                 ),
-                array(
-                    'type'    => 'radio',
-                    'label'   => $this->l('Display shop name'),
-                    'name'    => 'MAINTENANZ_SHOP',
-                    'class'   => 't',
-                    'is_bool' => true,
-                    'values'  => array(
-                        array(
-                            'id'    => '',
-                            'value' => 1,
-                            'label' => $this->l('Yes')
-                        ),
-                        array(
-                            'id'    => '',
-                            'value' => 0,
-                            'label' => $this->l('No')
-                        ),
-                    ),
-                ),
-            ),
-            'submit' => array(
+            ],
+            'submit' => [
                 'title' => $this->l('Save'),
-                'class' => 'button'
-            )
-        );
+                'class' => 'button btn btn-default',
+                'name'  => 'submitConfig',
+            ],
+        ];
 
-        $this->fields_form[1]['form'] = array(
-            'legend' => array('title' => $this->l('Debug settings')),
-            'input'  => array(
-                array(
-                    'type'    => 'radio',
-                    'label'   => $this->l('Enable debug mode'),
-                    'name'    => 'MAINTENANZ_DEBUG',
-                    'class'   => 't',
-                    'is_bool' => true,
-                    'values'  => array(
-                        array(
-                            'id'    => '',
-                            'value' => 1,
-                            'label' => $this->l('Yes')
-                        ),
-                        array(
-                            'id'    => '',
-                            'value' => 0,
-                            'label' => $this->l('No')
-                        ),
-                    ),
+        $formFields[]['form'] = [
+            'legend' => [
+                'title' => $this->l('Debug settings'),
+                'icon'  => 'icon-cogs',
+            ],
+            'input'  => [
+                array_merge(
+                    [
+                        'type'   => 'switch',
+                        'label'  => $this->l('Enable the debug mode of PrestaShop'),
+                        'name'   => 'MAINTENANZ_DEBUG',
+                        'values' => [
+                            [
+                                'id'    => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Yes'),
+                            ],
+                            [
+                                'id'    => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('No'),
+                            ],
+                        ],
+                    ],
+                    (version_compare(_PS_VERSION_, '1.6', '>=') ? [] : [
+                        'type'    => 'radio',
+                        'is_bool' => true,
+                        'class'   => 't',
+                    ])
                 ),
-            ),
-            'submit' => array(
+            ],
+            'submit' => [
                 'title' => $this->l('Save'),
-                'class' => 'button',
-                'name'  => 'submit_debug'
-            )
-        );
+                'class' => 'button btn btn-default',
+                'name'  => 'submitDebug',
+            ]
+        ];
 
-        $form->fields_value = $this->fields_value;
+        $languagesIds = \zapalm\prestashopHelpers\helpers\ArrayHelper::getColumn($languages, 'id_lang');
+        foreach ($this->confDefault as $confName => $definition) {
+            if ($definition['lang']) {
+                foreach ($languagesIds as $languageId) {
+                    $form->fields_value[$confName][$languageId] = (string)Configuration::get($confName, $languageId);
+                }
+            } else {
+                $form->fields_value[$confName] = (string)Configuration::get($confName);
+            }
+        }
 
-        return $form->generateForm($this->fields_form);
+        $output = $form->generateForm($formFields);
+
+        $output .= (new \zapalm\prestashopHelpers\widgets\AboutModuleWidget($this))
+            ->setProductId(self::HOMEPAGE_PRODUCT_ID)
+            ->setLicenseTitle(\zapalm\prestashopHelpers\widgets\AboutModuleWidget::LICENSE_AFL30)
+        ;
+
+        return $output;
     }
 }

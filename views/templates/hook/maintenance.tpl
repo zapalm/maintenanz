@@ -1,16 +1,22 @@
 {**
-* Maintenance tool: module for PrestaShop
-*
-* @link      http://prestashop.modulez.ru/en/administrative-tools/24-tool-for-maintenance-debug.html The module homepage
-* @author    zapalm <zapalm@ya.ru>
-* @copyright 2014-2016 zapalm
-* @license   http://opensource.org/licenses/afl-3.0.php Academic Free License (AFL 3.0)
-*}
+ * Tool for maintenance & debug: module for PrestaShop.
+ *
+ * @author    Maksim T. <zapalm@yandex.com>
+ * @copyright 2014 Maksim T.
+ * @link      https://prestashop.modulez.ru/en/administrative-features/24-tool-for-maintenance-debug.html
+ * @license   https://opensource.org/licenses/afl-3.0.php Academic Free License (AFL 3.0)
+ *}
 
 <!-- MODULE: maintenanz  -->
-<p>
-    <img src="{$ps_img_uri}admin/prefs.gif"/>
-    {$MAINTENANZ_SHOP}
-    {$MAINTENANZ_MSG}
-</p>
+<div class="maintenanz-page-block" style="margin-left: 20px;">
+    <p>
+        <img src="{$img_uri|escape:'html'}maintenance-icon.png" alt=""/>
+        <span class="maintenanz-shop-name">
+            {$MAINTENANZ_SHOP|escape:'html'}
+        </span>
+        <span class="maintenanz-message">
+            {$MAINTENANZ_MSG|escape:'html'}
+        </span>
+    </p>
+</div>
 <!-- /MODULE: maintenanz  -->

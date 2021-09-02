@@ -1,0 +1,21 @@
+{
+  "name": "zapalm/maintenanz",
+  "type": "prestashop-module",
+  "homepage": "https://prestashop.modulez.ru/en/administrative-features/24-tool-for-maintenance-debug.html",
+  "authors": [
+    {
+      "name": "Maksim T.",
+      "email": "zapalm@yandex.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.6",
+    "zapalm/prestashop-helpers": "dev-master"
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/zapalm/prestashop-helpers"
+    }
+  ]
+}
