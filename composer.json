@@ -17,5 +17,8 @@
       "type": "vcs",
       "url": "https://github.com/zapalm/prestashop-helpers"
     }
-  ]
+  ],
+  "config": {
+    "preferred-install": "dist"
+  }
 }
