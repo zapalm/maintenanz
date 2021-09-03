@@ -1,30 +1,44 @@
-Maintenance tool
-======
+# Tool for maintenance & debug: module for PrestaShop
 
-Description
-------------
-This is a module for [PrestaShop][4] e-commerce solution (v1.5-1.6) that allows to display maintenance messages for customers.
-More info: http://prestashop.modulez.ru/en/24-maintenance-tool.html
+## Description
+The module allows adding maintenance messages to the header of a site and to the maintenance page when the site is in the maintenance mode.
+It also has a setting for easy disabling or enabling PrestaShop debug mode.
 
-Installation & Update
-------------
-The module has a normal installation.
-After installation you can configure it.
+**The module's home page and the support page: [prestashop.modulez.ru][1]**.
+The full description, how to use, and the stable release for download are available there.
 
-To update the module just do this:
- - click uninstall button
- - replace all files from "/modules/maintenanz/" with new files
- - then click install button
+## Installation & Update
+The module has a normal installation and update (as usual, no extra knowledge needed).
 
-Contributing
-------------
-This is an open-source module licensed under Academic Free License (AFL 3.0).
-To contribute to this project, you should make pull requests to the development branch.
-If you need some help to make a [pull-request][1].
-All contributions must respect [the coding norm][2] and [the commit norm][3] in your pull-request.
-All files that you commit in your pull request must have Academic Free License (AFL 3.0).
+## How to help the project grow and get updates
+Give the **star** to the project. That's all! :)
 
-[1]: https://help.github.com/articles/using-pull-requests/
-[2]: http://doc.prestashop.com/display/PS15/Coding+Standards
-[3]: http://doc.prestashop.com/display/PS15/How+to+write+a+commit+message
-[4]: http://prestashop.com/
+## Contributing to the code
+
+### Requirements for code contributors
+
+Contributors **must** follow the following rules:
+
+* **Make your Pull Request on the *dev* branch**, NOT the *master* branch.
+* Do not update the module version number.
+* Follow [PSR coding standards][2].
+
+### Process in details for code contributors
+
+Contributors wishing to edit the project's files should follow the following process:
+
+1. Create your GitHub account, if you do not have one already.
+2. Fork the project to your GitHub account.
+3. Clone your fork to your local machine.
+4. Create a branch in your local clone of the project for your changes.
+5. Change the files in your branch. Be sure to follow [the coding standards][2].
+6. Push your changed branch to your fork in your GitHub account.
+7. Create a pull request for your changes **on the *dev* branch** of the project.
+   If you need help to make a pull request, read the [Github help page about creating pull requests][3].
+8. Wait for the maintainer to apply your changes.
+
+**Do not hesitate to create a pull request if even it's hard for you to apply the coding standards.**
+
+[1]: https://prestashop.modulez.ru/en/administrative-features/24-tool-for-maintenance-debug.html
+[2]: https://doc.prestashop.com/display/PS16/Coding+Standards
+[3]: https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests
