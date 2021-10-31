@@ -2,7 +2,8 @@
 
 ## Description
 The module allows adding maintenance messages to the header of a site and to the maintenance page when the site is in the maintenance mode.
-It also has a setting for easy disabling or enabling PrestaShop debug mode.
+It has a setting for easy disabling or enabling PrestaShop debug mode.
+It allows to diagnose a software and check for vulnerabilities.
 
 **The module's home page and the support page: [prestashop.modulez.ru][1]**.
 The full description, how to use, and the stable release for download are available there.
