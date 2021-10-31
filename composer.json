@@ -10,9 +10,19 @@
   ],
   "require": {
     "php": ">=5.6",
+    "zapalm/psdiag": "dev-master",
+    "zapalm/prestashop-security-vulnerability-checker": "dev-master",
     "zapalm/prestashop-helpers": "dev-master"
   },
   "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/zapalm/psdiag"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/zapalm/prestashop-security-vulnerability-checker"
+    },
     {
       "type": "vcs",
       "url": "https://github.com/zapalm/prestashop-helpers"

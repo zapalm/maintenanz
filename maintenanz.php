@@ -42,7 +42,7 @@ class Maintenanz extends Module
     {
         $this->name          = 'maintenanz';
         $this->tab           = 'administration';
-        $this->version       = '1.0.0';
+        $this->version       = '1.2.0';
         $this->author        = 'zapalm';
         $this->need_instance = false;
         $this->bootstrap     = true;
@@ -50,7 +50,7 @@ class Maintenanz extends Module
         parent::__construct();
 
         $this->displayName = $this->l('Maintenance tool');
-        $this->description = $this->l('Allow to add maintenance messages and has other features.');
+        $this->description = $this->l('Allows to add maintenance messages, manage the debug mode, diagnose a software, check for vulnerabilities and other.');
     }
 
     /**
@@ -213,6 +213,28 @@ class Maintenanz extends Module
                     $result &= Configuration::updateValue($confName, (string)Tools::getValue($confName));
                 }
             }
+        }
+
+        $diagnosisReport = Configuration::get('MAINTENANZ_DIAGNOSIS_REPORT');
+        if (false === $diagnosisReport || Tools::isSubmit('submitRefreshDiagnosisReport')) {
+            $psDiag = new \zapalm\PsDiag();
+            $report = $psDiag->diagnose();
+
+            ob_start();
+            $psDiag->printReport($report);
+            $diagnosisReport = \zapalm\prestashopHelpers\helpers\FormHelper::encode(strip_tags(ob_get_clean()));
+            Configuration::updateValue('MAINTENANZ_DIAGNOSIS_REPORT', $diagnosisReport);
+        }
+
+        $securityReport = Configuration::get('MAINTENANZ_SECURITY_REPORT');
+        if (false === $securityReport || Tools::isSubmit('submitRefreshSecurityReport')) {
+            $securityChecker = new \zapalm\PrestaShopSecurityVulnerabilityChecker();
+            $report = $securityChecker->check();
+
+            ob_start();
+            $securityChecker->printReport($report);
+            $securityReport = \zapalm\prestashopHelpers\helpers\FormHelper::encode(strip_tags(ob_get_clean()));
+            Configuration::updateValue('MAINTENANZ_SECURITY_REPORT', $securityReport);
         }
 
         $result = (bool)$result;
@@ -384,6 +406,34 @@ class Maintenanz extends Module
                 'title' => $this->l('Save'),
                 'class' => 'button btn btn-default',
                 'name'  => 'submitDebug',
+            ]
+        ];
+
+        $formFields[]['form'] = [
+            'legend' => [
+                'title' => $this->l('Software diagnosis'),
+                'icon'  => 'icon-info',
+            ],
+            'description' => '<pre>' . \zapalm\prestashopHelpers\helpers\FormHelper::decode(Configuration::get('MAINTENANZ_DIAGNOSIS_REPORT')) . '</pre>',
+            'submit' => [
+                'title' => $this->l('Refresh'),
+                'class' => 'button btn btn-default',
+                'icon'  => 'process-icon-refresh',
+                'name'  => 'submitRefreshDiagnosisReport',
+            ]
+        ];
+
+        $formFields[]['form'] = [
+            'legend' => [
+                'title' => $this->l('Security check'),
+                'icon'  => 'icon-info',
+            ],
+            'description' => '<pre>' . \zapalm\prestashopHelpers\helpers\FormHelper::decode(Configuration::get('MAINTENANZ_SECURITY_REPORT')) . '</pre>',
+            'submit' => [
+                'title' => $this->l('Refresh'),
+                'class' => 'button btn btn-default',
+                'icon'  => 'process-icon-refresh',
+                'name'  => 'submitRefreshSecurityReport',
             ]
         ];
 

@@ -3,7 +3,7 @@
 global $_MODULE;
 $_MODULE = array();
 $_MODULE['<{maintenanz}prestashop>maintenanz_f1e6f98d27358a45b073357ab265d4f2'] = 'Инструмент для технического обслуживания сайта';
-$_MODULE['<{maintenanz}prestashop>maintenanz_b345baf40c7f4fdb8b39d36e54a6d562'] = 'Отображает сообщения пользователям о техническом состоянии сайта и имеет другие инструменты для обслуживания.';
+$_MODULE['<{maintenanz}prestashop>maintenanz_29e773facd500753450f4ed8d3a3f684'] = 'Позволяет отображать сообщения об обслуживании сайта, управлять режимом отладки, диагностировать ПО, проверять наличие уязвимостей и многое другое.';
 $_MODULE['<{maintenanz}prestashop>maintenanz_aa51317782f438731ac4eb6bcbd60ce8'] = 'Файл \"defines.inc.php\" не может быть перезаписан.';
 $_MODULE['<{maintenanz}prestashop>maintenanz_1e103a622ed29a413eadbb2839927386'] = 'Настройки сохранились не успешно';
 $_MODULE['<{maintenanz}prestashop>maintenanz_c888438d14855d7d96a2724ee9c306bd'] = 'Настройки сохранены';
@@ -22,3 +22,6 @@ $_MODULE['<{maintenanz}prestashop>maintenanz_1bf212fc499a1501dead1c30b075602a'] 
 $_MODULE['<{maintenanz}prestashop>maintenanz_c9cc8cce247e49bae79f15173ce97354'] = 'Сохранить';
 $_MODULE['<{maintenanz}prestashop>maintenanz_65b849a361f21284abc6df2a7437965c'] = 'Настройки отладки';
 $_MODULE['<{maintenanz}prestashop>maintenanz_a6f2ec99771523a7ca93d0b2da2527c9'] = 'Включить режим отладки PrestaShop';
+$_MODULE['<{maintenanz}prestashop>maintenanz_4eb968d03169366743a3ad13d42c0fba'] = 'Диагностика ПО';
+$_MODULE['<{maintenanz}prestashop>maintenanz_63a6a88c066880c5ac42394a22803ca6'] = 'Обновить';
+$_MODULE['<{maintenanz}prestashop>maintenanz_00f26302f753ea4871b7634a6d025bf9'] = 'Проверка безопасности';
