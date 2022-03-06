@@ -42,7 +42,7 @@ class Maintenanz extends Module
     {
         $this->name          = 'maintenanz';
         $this->tab           = 'administration';
-        $this->version       = '1.2.0';
+        $this->version       = '1.3.0';
         $this->author        = 'zapalm';
         $this->need_instance = false;
         $this->bootstrap     = true;
